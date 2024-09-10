@@ -1,0 +1,7 @@
+Flask
+numpy
+scipy
+scikit-learn
+datetime
+nfl_data_py
+gunicorn

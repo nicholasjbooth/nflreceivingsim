@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simulation Results for {{ player_name }}</h1>
+
+    <p><strong>Median Yards:</strong> {{ median_yards }}</p>
+    <p><strong>Expected Receptions:</strong> {{ adj_average }}</p>
+    <p><strong>Median Longest Reception:</strong> {{ median_longest_reception }}</p>
+
+    <div class="category">
+        <h2>Alt Recs</h2>
+        <ul>
+            {% for result in alt_recs %}
+                <li>{{ result }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="category">
+        <h2>Alt Yards</h2>
+        <ul>
+            {% for result in alt_yards %}
+                <li>{{ result }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="category">
+        <h2>uYards oRecs</h2>
+        <ul>
+            {% for result in uyards_orecs %}
+                <li>{{ result }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="category">
+        <h2>uRecs oYards</h2>
+        <ul>
+            {% for result in urecs_oyards %}
+                <li>{{ result }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="category">
+        <h2>Alt Longest Recs</h2>
+        <ul>
+            {% for result in alt_longest_recs %}
+                <li>{{ result }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <p><a href="/?player_name={{ player_name }}&receptions_threshold={{ receptions_threshold }}&yard_threshold={{ yard_threshold }}&time_remaining={{ time_remaining }}&current_receptions={{ current_receptions }}&current_yards={{ current_yards }}">Run another simulation</a></p>
+</div>
+
+</body>
+</html>

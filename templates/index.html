@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Simulation Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 40px auto;
+        }
+        fieldset {
+            border: none;
+            margin-bottom: 15px;
+        }
+        legend {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        label, input {
+            font-size: 18px;
+            display: block;
+            margin: 10px 0;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="submit"], input[type="button"] {
+            margin-top: 20px;
+            padding: 10px 15px;
+            font-size: 18px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"] {
+            background-color: #428bca;
+        }
+        input[type="button"] {
+            background-color: #d9534f;
+        }
+    </style>
+    <script>
+        function clearForm() {
+            document.getElementById("player_name").value = "";
+            document.getElementById("receptions_threshold").value = "";
+            document.getElementById("yard_threshold").value = "";
+            document.getElementById("time_remaining").value = "";
+            document.getElementById("current_receptions").value = "";
+            document.getElementById("current_yards").value = "";
+        }
+    </script>
+</head>
+<body>
+
+<h1>Enter Simulation Details</h1>
+
+<form action="/simulate" method="POST">
+    <fieldset>
+        <legend>Player Information</legend>
+        <label for="player_name">Player Name</label>
+        <input type="text" id="player_name" name="player_name" required placeholder="Enter player's name" value="{{ player_name or '' }}">
+    </fieldset>
+
+    <fieldset>
+        <legend>Thresholds</legend>
+        <label for="receptions_threshold">Receptions Threshold (optional)</label>
+        <input type="number" id="receptions_threshold" name="receptions_threshold" step="0.1" placeholder="e.g., 5.5" value="{{ receptions_threshold or '' }}">
+
+        <label for="yard_threshold">Yard Threshold (optional)</label>
+        <input type="number" id="yard_threshold" name="yard_threshold" step="0.1" placeholder="e.g., 50.5" value="{{ yard_threshold or '' }}">
+    </fieldset>
+
+    <fieldset>
+        <legend>Current Game Stats</legend>
+        <label for="time_remaining">Time Remaining (optional)</label>
+        <input type="number" id="time_remaining" name="time_remaining" step="1" placeholder="e.g., 60 (minutes)" value="{{ time_remaining or '' }}">
+
+        <label for="current_receptions">Current Receptions (optional)</label>
+        <input type="number" id="current_receptions" name="current_receptions" step="1" placeholder="e.g., 3" value="{{ current_receptions or '' }}">
+
+        <label for="current_yards">Current Yards (optional)</label>
+        <input type="number" id="current_yards" name="current_yards" step="1" placeholder="e.g., 40" value="{{ current_yards or '' }}">
+    </fieldset>
+
+    <input type="submit" value="Run Simulation">
+    <input type="button" value="Clear All" onclick="clearForm()">
+</form>
+
+</body>
+</html>
