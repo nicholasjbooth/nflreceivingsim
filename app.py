@@ -16,7 +16,7 @@ app.secret_key = os.environ.get(
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Constants
+# Constants MAKE SURE THIS CAN BE SEEN
 num_sims = 10000
 window = 7
 alpha = 0.915
