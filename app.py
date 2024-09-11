@@ -8,6 +8,7 @@ from sklearn.mixture import GaussianMixture
 from calculations import calculate_thresholds, weighted_moving_average
 from data_processing import get_and_prepare_player_data
 from simulation import simulate_games
+from betting_tools import calculate_bet_size_and_effective_odds, i2a
 
 # Create and configure the Flask app
 app = Flask(__name__)
@@ -45,6 +46,12 @@ def index():
     current_yards = session.get('current_yards', '')
     current_receptions = session.get('current_receptions', '')
     time_remaining = session.get('time_remaining', '')
+    lower_bound = session.get('lower_bound', '')
+    upper_bound = session.get('upper_bound', '')
+    lower_bound_odds = session.get('lower_bound_odds', '')
+    upper_bound_odds = session.get('upper_bound_odds', '')
+    lower_bound_stake = session.get('lower_bound_stake', '')
+    upper_bound_stake = session.get('upper_bound_stake', '')
 
     # Pass the session values to the index.html template
     return render_template(
@@ -55,6 +62,12 @@ def index():
         current_yards=current_yards,
         current_receptions=current_receptions,
         time_remaining=time_remaining,
+        lower_bound=lower_bound,
+        upper_bound=upper_bound,
+        lower_bound_odds=lower_bound_odds,
+        upper_bound_odds=upper_bound_odds,
+        lower_bound_stake=lower_bound_stake,
+        upper_bound_stake=upper_bound_stake
     )
 
 
@@ -66,12 +79,22 @@ def simulate():
         start_time = time.time()
 
         # Get form inputs and store them in local variables
+        # Get form inputs and store them in local variables
         player_name = request.form.get('player_name')
         yard_threshold = request.form.get('yard_threshold', None)
         receptions_threshold = request.form.get('receptions_threshold', None)
         current_yards = int(request.form.get('current_yards') or 0)
         current_receptions = int(request.form.get('current_receptions') or 0)
         time_remaining = int(request.form.get('time_remaining') or 60)
+        lower_bound = float(request.form.get('lower_bound') or 22)
+        upper_bound = float(request.form.get('upper_bound') or 78)
+        lower_bound_odds = int(request.form.get('lower_bound_odds') or -110)
+        upper_bound_odds = int(request.form.get('upper_bound_odds') or -110)
+
+        # Correct handling of bet sizes
+        lower_bound_stake = float(request.form.get('lower_bound_stake') or 0.0)
+        upper_bound_stake = float(request.form.get('upper_bound_stake') or 0.0)
+    
 
         # Store the form inputs in the session for future use
         session['player_name'] = player_name
@@ -80,6 +103,12 @@ def simulate():
         session['current_yards'] = current_yards
         session['current_receptions'] = current_receptions
         session['time_remaining'] = time_remaining
+        session['lower_bound'] = lower_bound
+        session['upper_bound'] = upper_bound
+        session['lower_bound_odds'] = lower_bound_odds
+        session['upper_bound_odds'] = upper_bound_odds
+        session['lower_bound_stake'] = lower_bound_stake
+        session['upper_bound_stake'] = upper_bound_stake
 
         # Time player data preparation
         data_start = time.time()
@@ -124,7 +153,7 @@ def simulate():
         threshold_start = time.time()
         threshold_results = calculate_thresholds(games_sim_results, yard_threshold,
                                                  receptions_threshold, receptions_thresholds,
-                                                 yards_thresholds, longest_reception_thresholds)
+                                                 yards_thresholds, longest_reception_thresholds, lower_bound, upper_bound)
         print(f"Threshold calculation took {time.time() - threshold_start:.2f} seconds")
 
         # Formatting results
@@ -150,9 +179,17 @@ def simulate():
         uyards_orecs = format_results(threshold_results['uyards_orecs'])
         urecs_oyards = format_results(threshold_results['urecs_oyards'])
         alt_longest_recs = format_results(threshold_results['alt_longest_recs'])
+        percent_between = format_percentage(threshold_results['percent_between'])
 
         total_time = time.time() - start_time
         print(f"Total simulation took {total_time:.2f} seconds")
+
+        middle_metrics = calculate_bet_size_and_effective_odds(lower_bound_odds, upper_bound_odds, lower_bound_stake, bet_on='outcome_1')
+        lower_bound_stake = middle_metrics['bet_size_1']
+        upper_bound_stake = middle_metrics['bet_size_2']
+        risk_amount = middle_metrics['risk_amount']
+        effective_odds = i2a(middle_metrics['effective_odds'])
+
 
         return render_template(
             'results.html',
@@ -164,7 +201,17 @@ def simulate():
             alt_yards=alt_yards,
             uyards_orecs=uyards_orecs,
             urecs_oyards=urecs_oyards,
-            alt_longest_recs=alt_longest_recs)
+            alt_longest_recs=alt_longest_recs,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            lower_bound_odds=lower_bound_odds,
+            upper_bound_odds=upper_bound_odds,
+            lower_bound_stake=lower_bound_stake,
+            upper_bound_stake=upper_bound_stake,
+            percent_between=percent_between,
+            effective_odds=effective_odds,
+            risk_amount=risk_amount,
+            )
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")

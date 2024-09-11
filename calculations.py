@@ -10,7 +10,7 @@ def weighted_moving_average(x, decay):
 
 #Calculate the thresholds for printing
 def calculate_thresholds(games_sim_results, yard_threshold, receptions_threshold, 
-                         receptions_thresholds, yards_thresholds, longest_reception_thresholds):
+                         receptions_thresholds, yards_thresholds, longest_reception_thresholds, lower_bound, upper_bound):
     # Categorized results
     alt_recs = []
     alt_yards = []
@@ -50,11 +50,15 @@ def calculate_thresholds(games_sim_results, yard_threshold, receptions_threshold
         odds = i2a(percent_above / 100)  # Convert implied probability to American odds
         alt_longest_recs.append(f"{threshold}+ yard reception: {percent_above:.2f}% {odds}")
 
+    # Calculate the probability of going between 2 yard thresholds lower_bound and upper_bound
+    percent_between = ((games_sim_results['Simulated_Yards'] >= lower_bound) & (games_sim_results['Simulated_Yards'] <= upper_bound)).mean() * 100
+
     # Return categorized results
     return {
         'alt_recs': alt_recs,
         'alt_yards': alt_yards,
         'uyards_orecs': uyards_orecs,
         'urecs_oyards': urecs_oyards,
-        'alt_longest_recs': alt_longest_recs
+        'alt_longest_recs': alt_longest_recs,
+        'percent_between': percent_between
     }

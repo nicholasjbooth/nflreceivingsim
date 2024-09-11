@@ -42,3 +42,43 @@ def i2a(implied_probability):
 def i2d(implied_probability):
     return 1 / implied_probability
 
+#Arbitrage Calculator with effective bet calculator
+def calculate_bet_size_and_effective_odds(odds_1_american, odds_2_american, known_bet_size=None, bet_on='outcome_1'):
+    odds_1_decimal = a2d(odds_1_american)
+    odds_2_decimal = a2d(odds_2_american)
+    
+    if known_bet_size is None:
+        known_bet_size = 100
+
+    if bet_on is None:
+        bet_on = 'outcome_1'
+    
+    if bet_on == 'outcome_1':
+        bet_size_2 = (known_bet_size * odds_1_decimal) / odds_2_decimal
+
+    elif bet_on == 'outcome_2':
+        bet_size_1 = (known_bet_size * odds_2_decimal) / odds_1_decimal
+        bet_size_2 = known_bet_size
+
+    else:
+        raise ValueError("Invalid bet_on value. Must be 'outcome_1' or 'outcome_2'")
+
+    effective_probability = 1 - (odds_1_decimal * odds_2_decimal) / (odds_1_decimal + odds_2_decimal)
+    risk_amount = (known_bet_size + bet_size_2) * effective_probability
+    effective_probability = 1 if effective_probability < 0 else effective_probability
+    
+    return {
+        'bet_size_1': known_bet_size if bet_on == 'outcome_1' else bet_size_1,
+        'bet_size_2': bet_size_2,
+        'risk_amount': risk_amount,
+        'effective_odds': effective_probability
+    }
+
+x = calculate_bet_size_and_effective_odds(100, 101)
+print(x)
+
+y = (i2d(x['effective_odds']))*x['risk_amount']
+print(y)
+
+z = i2a(x['effective_odds'])
+print(z)

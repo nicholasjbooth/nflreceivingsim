@@ -64,6 +64,12 @@
             document.getElementById("time_remaining").value = "";
             document.getElementById("current_receptions").value = "";
             document.getElementById("current_yards").value = "";
+            document.getElementById("lower_bound").value = "";
+            document.getElementById("lower_bound_odds").value = "";
+            document.getElementById("lower_bound_bet_amount").value = "";
+            document.getElementById("upper_bound").value = "";
+            document.getElementById("upper_bound_odds").value = "";
+            document.getElementById("upper_bound_bet_amount").value = "";
         }
     </script>
 </head>
@@ -97,6 +103,27 @@
 
         <label for="current_yards">Current Yards (optional)</label>
         <input type="number" id="current_yards" name="current_yards" step="1" placeholder="e.g., 40" value="{{ current_yards or '' }}">
+    </fieldset>
+
+    <fieldset>
+        <legend>Middle/Arb Calculator</legend>
+        <label for="lower_bound">Lower Bound (optional)</label>
+        <input type="number" id="lower_bound" name="lower_bound" step=".5" placeholder="e.g., 45 (yards)" value="{{ lower_bound or '' }}">
+
+        <label for="lower_bound_odds">Odds (optional)</label>
+        <input type="number" id="lower_bound_odds" name="lower_bound_odds" step="1" placeholder="Default -110" value="{{ lower_bound_odds or '' }}">
+
+        <label for="lower_bound_stake">Stake (optional)</label>
+        <input type="number" id="lower_bound_stake" name="lower_bound_stake" step=".01" placeholder="e.g., 50" value="{{ lower_bound_stake or '' }}">
+
+        <label for="upper_bound">Upper Bound (optional)</label>
+        <input type="number" id="upper_bound" name="upper_bound" step=".5" placeholder="e.g., 55 (yards)" value="{{ upper_bound or '' }}">
+
+        <label for="upper_bound_odds">Odds (optional)</label>
+        <input type="number" id="upper_bound_odds" name="upper_bound_odds" step="1" placeholder="Default -110" value="{{ upper_bound_odds or '' }}">
+
+        <label for="upper_bound_bet_amount">Stake (optional)</label>
+        <input type="number" id="upper_bound_stake" name="upper_bound_stake" step=".01" placeholder="e.g., 100" value="{{ upper_bound_stake or '' }}">
     </fieldset>
 
     <input type="submit" value="Run Simulation">
