@@ -141,7 +141,7 @@ def simulate():
                 percent_value = float(percent_str.split(": ")[1].strip("%"))
                 odds_value = int(odds_str)
                 formatted_list.append(
-                    f"{percent_str.split(': ')[0]}:{format_percentage(percent_value)} {format_odds(odds_value)}"
+                    f"{percent_str.split(': ')[0]}: {format_percentage(percent_value)} {format_odds(odds_value)}"
                 )
             return formatted_list
 
