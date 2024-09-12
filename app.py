@@ -53,6 +53,11 @@ def index():
     lower_bound_stake = session.get('lower_bound_stake', '')
     upper_bound_stake = session.get('upper_bound_stake', '')
 
+    # Logging session values for debugging
+    logging.debug(f"Session values - Player: {player_name}, Yard Threshold: {yard_threshold}, "
+                  f"Receptions Threshold: {receptions_threshold}, Current Yards: {current_yards}, "
+                  f"Current Receptions: {current_receptions}, Time Remaining: {time_remaining}")
+
     # Pass the session values to the index.html template
     return render_template(
         'index.html',
@@ -77,8 +82,8 @@ def simulate():
     try:
         # Start timing
         start_time = time.time()
+        logging.debug("Simulation started.")
 
-        # Get form inputs and store them in local variables
         # Get form inputs and store them in local variables
         player_name = request.form.get('player_name')
         yard_threshold = request.form.get('yard_threshold', None)
@@ -86,6 +91,10 @@ def simulate():
         current_yards = int(request.form.get('current_yards') or 0)
         current_receptions = int(request.form.get('current_receptions') or 0)
         time_remaining = int(request.form.get('time_remaining') or 60)
+        logging.debug(f"Form inputs - Player: {player_name}, Yard Threshold: {yard_threshold}, "
+                      f"Receptions Threshold: {receptions_threshold}, Current Yards: {current_yards}, "
+                      f"Current Receptions: {current_receptions}, Time Remaining: {time_remaining}")
+
         # Fetch and convert lower/upper bounds and odds, keeping None if not provided
         lower_bound = request.form.get('lower_bound')
         upper_bound = request.form.get('upper_bound')
@@ -98,13 +107,17 @@ def simulate():
         lower_bound_odds = int(lower_bound_odds) if lower_bound_odds else -110
         upper_bound_odds = int(upper_bound_odds) if upper_bound_odds else -110
 
+        logging.debug(f"Bounds and Odds - Lower Bound: {lower_bound}, Upper Bound: {upper_bound}, "
+                      f"Lower Bound Odds: {lower_bound_odds}, Upper Bound Odds: {upper_bound_odds}")
 
-       # Correct handling of bet sizes with a default of 0.0
+        # Correct handling of bet sizes with a default of 0.0
         lower_bound_stake = float(request.form.get('lower_bound_stake') or 0.0)
         upper_bound_stake = float(request.form.get('upper_bound_stake') or 0.0)
 
         if lower_bound_stake == 0.00 and upper_bound_stake == 0.00:
             lower_bound_stake = 100
+
+        logging.debug(f"Stakes - Lower Bound Stake: {lower_bound_stake}, Upper Bound Stake: {upper_bound_stake}")
 
         # Store the form inputs in the session for future use
         session['player_name'] = player_name
@@ -120,10 +133,12 @@ def simulate():
         session['lower_bound_stake'] = lower_bound_stake
         session['upper_bound_stake'] = upper_bound_stake
 
+        logging.debug("Session values updated.")
+
         # Time player data preparation
         data_start = time.time()
         df_yards, df_receptions = get_and_prepare_player_data(player_name)
-        print(f"Data preparation took {time.time() - data_start:.2f} seconds")
+        logging.debug(f"Data preparation took {time.time() - data_start:.2f} seconds")
 
         yards_per_reception = df_yards['yards_gained']
 
@@ -133,23 +148,24 @@ def simulate():
             'name')['receptions'].transform(
                 lambda x: x.shift(0).rolling(window, min_periods=1).apply(
                     weighted_moving_average, raw=True, args=(alpha, )))
-        print(f"Weighted moving average calculation took {time.time() - wma_start:.2f} seconds")
+        logging.debug(f"Weighted moving average calculation took {time.time() - wma_start:.2f} seconds")
 
         df_receptions['wtd_rec'] = df_receptions['wtd_rec'] * (
             1 - (regression_games / window)) + (regression_amount * (regression_games / window))
         average_receptions = df_receptions['wtd_rec'].iloc[-1]
         adj_average = average_receptions * (time_remaining / 60)
+        logging.debug(f"Adjusted Average: {adj_average}")
 
         # Time GMM fitting
         gmm_start = time.time()
         gmm = GaussianMixture(n_components=3)
         gmm.fit(yards_per_reception.values.reshape(-1, 1))
-        print(f"GMM fitting took {time.time() - gmm_start:.2f} seconds")
+        logging.debug(f"GMM fitting took {time.time() - gmm_start:.2f} seconds")
 
         # Time simulation
         sim_start = time.time()
         games_sim_results = simulate_games(adj_average, gmm, num_sims)
-        print(f"Simulation took {time.time() - sim_start:.2f} seconds")
+        logging.debug(f"Simulation took {time.time() - sim_start:.2f} seconds")
 
         # Calculate medians
         median_yards = round(games_sim_results['Simulated_Yards'].median(), 2)
@@ -164,7 +180,7 @@ def simulate():
         threshold_results = calculate_thresholds(games_sim_results, yard_threshold,
                                                  receptions_threshold, receptions_thresholds,
                                                  yards_thresholds, longest_reception_thresholds, lower_bound, upper_bound)
-        print(f"Threshold calculation took {time.time() - threshold_start:.2f} seconds")
+        logging.debug(f"Threshold calculation took {time.time() - threshold_start:.2f} seconds")
 
         # Formatting results
         def format_odds(odds_value):

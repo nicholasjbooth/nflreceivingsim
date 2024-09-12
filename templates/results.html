@@ -6,27 +6,108 @@
     <title>Simulation Results</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
             padding: 20px;
         }
         .container {
             max-width: 1200px;
             margin: 50px auto;
             background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 12px;
             box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+            color: #333;
+        }
+        p {
+            font-size: 18px;
+            margin: 12px 0;
+            color: #555;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .column {
+            flex-basis: 48%;
+            margin-bottom: 20px;
+        }
+        .highlight {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .category {
+            margin-top: 30px;
+        }
+        h2 {
+            margin-top: 30px;
+            color: #444;
+            font-size: 22px;
         }
         ul {
             list-style: none;
-            padding: 0;
+            padding-left: 0;
         }
         ul li {
-            padding: 5px 0;
+            padding: 6px 0;
+            font-size: 16px;
+        }
+        .divider {
+            margin: 40px 0;
+            height: 1px;
+            background-color: #ddd;
+        }
+        .alt-list {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .alt-list > div {
+            flex-basis: 48%;
+        }
+        .return-link {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .return-link a {
+            font-size: 18px;
+            color: #428bca;
+            text-decoration: none;
+            background-color: #f8f8f8;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease;
+        }
+        .return-link a:hover {
+            background-color: #eaeaea;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .column {
+                flex-basis: 100%;
+            }
+            .alt-list > div {
+                flex-basis: 100%;
+            }
+            h1 {
+                font-size: 28px;
+            }
+            p {
+                font-size: 16px;
+            }
+            h2 {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -35,58 +116,88 @@
 <div class="container">
     <h1>Simulation Results for {{ player_name }}</h1>
 
-    <p><strong>Median Yards:</strong> {{ median_yards }}</p>
-    <p><strong>Expected Receptions:</strong> {{ adj_average }}</p>
-    <p><strong>Median Longest Reception:</strong> {{ median_longest_reception }}</p>
-    <!--show effective odds, lower bound, lower_bounds_odds, lower_bound_stake,same three for upper, percent between, risk amount-->
-    <p><strong>Breakeven %:</strong> {{ effective_odds }}</p>
-    <p><strong>Breakeven Odds:</strong> {{ effective_american }}</p>
-    <p><strong>Lower Bound:</strong> {{ lower_bound }}</p>
-    <p><strong>Lower Bound Odds:</strong> {{ lower_bound_odds }}</p>
-    <p><strong>Lower Bound Stake:</strong> ${{ lower_bound_stake }}</p>
-    <p><strong>Upper Bound:</strong> {{ upper_bound }}</p>
-    <p><strong>Upper Bound Odds:</strong> {{ upper_bound_odds }}</p>
-    <p><strong>Upper Bound Stake:</strong> ${{ upper_bound_stake }}</p>
-    <p><strong>Actual %:</strong> {{ percent_between }}</p>
-    <p><strong>Actual Odds: </strong> {{percent_between_american }}</p>
-    <p><strong>Risk Amount:</strong> ${{ risk_amount }}</p>
-
-
-
-    <div class="category">
-        <h2>Alt Recs</h2>
-        <ul>
-            {% for result in alt_recs %}
-                <li>{{ result }}</li>
-            {% endfor %}
-        </ul>
+    <!-- Basic Stats -->
+    <div class="highlight">
+        <p><strong>Median Yards:</strong> {{ median_yards }}</p>
+        <p><strong>Expected Receptions:</strong> {{ adj_average }}</p>
+        <p><strong>Median Longest Reception:</strong> {{ median_longest_reception }}</p>
     </div>
 
-    <div class="category">
-        <h2>Alt Yards</h2>
-        <ul>
-            {% for result in alt_yards %}
-                <li>{{ result }}</li>
-            {% endfor %}
-        </ul>
+    <!-- Upper & Lower Bound Section -->
+    <div class="highlight">
+        <div class="row">
+            <div class="column">
+                <p><strong>Lower Bound:</strong> {{ lower_bound }}</p>
+                <p><strong>Lower Bound Odds:</strong> {{ lower_bound_odds }}</p>
+                <p><strong>Lower Bound Stake:</strong> ${{ lower_bound_stake }}</p>
+            </div>
+            <div class="column">
+                <p><strong>Upper Bound:</strong> {{ upper_bound }}</p>
+                <p><strong>Upper Bound Odds:</strong> {{ upper_bound_odds }}</p>
+                <p><strong>Upper Bound Stake:</strong> ${{ upper_bound_stake }}</p>
+            </div>
+        </div>
     </div>
 
-    <div class="category">
-        <h2>uYards oRecs</h2>
-        <ul>
-            {% for result in uyards_orecs %}
-                <li>{{ result }}</li>
-            {% endfor %}
-        </ul>
+    <!-- Effective & Actual Odds Section -->
+    <div class="highlight">
+        <div class="row">
+            <div class="column">
+                <p><strong>Breakeven %:</strong> {{ effective_odds }}</p>
+                <p><strong>Breakeven Odds:</strong> {{ effective_american }}</p>
+            </div>
+            <div class="column">
+                <p><strong>Actual %:</strong> {{ percent_between }}</p>
+                <p><strong>Actual Odds:</strong> {{ percent_between_american }}</p>
+            </div>
+        </div>
+        <p><strong>Risk Amount:</strong> ${{ risk_amount }}</p>
     </div>
 
-    <div class="category">
-        <h2>uRecs oYards</h2>
-        <ul>
-            {% for result in urecs_oyards %}
-                <li>{{ result }}</li>
-            {% endfor %}
-        </ul>
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Alternate Scenarios -->
+    <div class="alt-list">
+        <div>
+            <div class="category">
+                <h2>Alt Recs</h2>
+                <ul>
+                    {% for result in alt_recs %}
+                        <li>{{ result }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="category">
+                <h2>uYards oRecs</h2>
+                <ul>
+                    {% for result in uyards_orecs %}
+                        <li>{{ result }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div>
+            <div class="category">
+                <h2>Alt Yards</h2>
+                <ul>
+                    {% for result in alt_yards %}
+                        <li>{{ result }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="category">
+                <h2>uRecs oYards</h2>
+                <ul>
+                    {% for result in urecs_oyards %}
+                        <li>{{ result }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 
     <div class="category">
@@ -98,7 +209,12 @@
         </ul>
     </div>
 
-    <p><a href="/?player_name={{ player_name }}&receptions_threshold={{ receptions_threshold }}&yard_threshold={{ yard_threshold }}&time_remaining={{ time_remaining }}&current_receptions={{ current_receptions }}&current_yards={{ current_yards }}">Run another simulation</a></p>
+    <!-- Return Link -->
+    <div class="return-link">
+        <a href="/?player_name={{ player_name }}&receptions_threshold={{ receptions_threshold }}&yard_threshold={{ yard_threshold }}&time_remaining={{ time_remaining }}&current_receptions={{ current_receptions }}&current_yards={{ current_yards }}">
+            Run another simulation
+        </a>
+    </div>
 </div>
 
 </body>
