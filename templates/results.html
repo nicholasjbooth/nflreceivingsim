@@ -39,15 +39,17 @@
     <p><strong>Expected Receptions:</strong> {{ adj_average }}</p>
     <p><strong>Median Longest Reception:</strong> {{ median_longest_reception }}</p>
     <!--show effective odds, lower bound, lower_bounds_odds, lower_bound_stake,same three for upper, percent between, risk amount-->
-    <p><strong>Effective Odds:</strong> {{ effective_odds }}</p>
+    <p><strong>Breakeven %:</strong> {{ effective_odds }}</p>
+    <p><strong>Breakeven Odds:</strong> {{ effective_american }}</p>
     <p><strong>Lower Bound:</strong> {{ lower_bound }}</p>
     <p><strong>Lower Bound Odds:</strong> {{ lower_bound_odds }}</p>
-    <p><strong>Lower Bound Stake:</strong> {{ lower_bound_stake }}</p>
+    <p><strong>Lower Bound Stake:</strong> ${{ lower_bound_stake }}</p>
     <p><strong>Upper Bound:</strong> {{ upper_bound }}</p>
     <p><strong>Upper Bound Odds:</strong> {{ upper_bound_odds }}</p>
-    <p><strong>Upper Bound Stake:</strong> {{ upper_bound_stake }}</p>
-    <p><strong>Percent Between:</strong> {{ percent_between }}</p>
-    <p><strong>Risk Amount:</strong> {{ risk_amount }}</p>
+    <p><strong>Upper Bound Stake:</strong> ${{ upper_bound_stake }}</p>
+    <p><strong>Actual %:</strong> {{ percent_between }}</p>
+    <p><strong>Actual Odds: </strong> {{percent_between_american }}</p>
+    <p><strong>Risk Amount:</strong> ${{ risk_amount }}</p>
 
 
 
@@ -96,7 +98,7 @@
         </ul>
     </div>
 
-    <p><a href="/?player_name={{ player_name }}&receptions_threshold={{ receptions_threshold }}&yard_threshold={{ yard_threshold }}&time_remaining={{ time_remaining }}&current_receptions={{ current_receptions }}&current_yards={{ current_yards }}&lower_bound={{ lower_bound }}&upper_bound={{ upper_bound }}&lower_bound_odds={{ lower_bound_odds }}&upper_bound_odds={{ upper_bound_odds }}&lower_bound_stake={{ lower_bound_bet_size }}&upper_bound_stake={{ upper_bound_bet_size }}">Run another simulation</a></p>
+    <p><a href="/?player_name={{ player_name }}&receptions_threshold={{ receptions_threshold }}&yard_threshold={{ yard_threshold }}&time_remaining={{ time_remaining }}&current_receptions={{ current_receptions }}&current_yards={{ current_yards }}">Run another simulation</a></p>
 </div>
 
 </body>

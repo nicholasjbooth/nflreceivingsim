@@ -26,7 +26,7 @@ regression_amount = 3.05
 regression_games = window / 5
 
 receptions_thresholds = [2, 3, 4, 5, 6, 7, 8, 9]
-yards_thresholds = [25, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150]
+yards_thresholds = [25, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200]
 longest_reception_thresholds = [10, 20, 30, 40, 50]
 
 
@@ -86,15 +86,25 @@ def simulate():
         current_yards = int(request.form.get('current_yards') or 0)
         current_receptions = int(request.form.get('current_receptions') or 0)
         time_remaining = int(request.form.get('time_remaining') or 60)
-        lower_bound = float(request.form.get('lower_bound') or 22)
-        upper_bound = float(request.form.get('upper_bound') or 78)
-        lower_bound_odds = int(request.form.get('lower_bound_odds') or -110)
-        upper_bound_odds = int(request.form.get('upper_bound_odds') or -110)
+        # Fetch and convert lower/upper bounds and odds, keeping None if not provided
+        lower_bound = request.form.get('lower_bound')
+        upper_bound = request.form.get('upper_bound')
+        lower_bound_odds = request.form.get('lower_bound_odds')
+        upper_bound_odds = request.form.get('upper_bound_odds')
 
-        # Correct handling of bet sizes
+        # Convert to float/int only if a valid value is provided
+        lower_bound = float(lower_bound) if lower_bound else None
+        upper_bound = float(upper_bound) if upper_bound else None
+        lower_bound_odds = int(lower_bound_odds) if lower_bound_odds else None
+        upper_bound_odds = int(upper_bound_odds) if upper_bound_odds else None
+
+
+       # Correct handling of bet sizes with a default of 0.0
         lower_bound_stake = float(request.form.get('lower_bound_stake') or 0.0)
         upper_bound_stake = float(request.form.get('upper_bound_stake') or 0.0)
-    
+
+        if lower_bound_stake == 0.00 and upper_bound_stake == 0.00:
+            lower_bound_stake = 100
 
         # Store the form inputs in the session for future use
         session['player_name'] = player_name
@@ -102,7 +112,7 @@ def simulate():
         session['receptions_threshold'] = receptions_threshold
         session['current_yards'] = current_yards
         session['current_receptions'] = current_receptions
-        session['time_remaining'] = time_remaining
+        session['time_remaining'] = None if time_remaining == 60 else time_remaining
         session['lower_bound'] = lower_bound
         session['upper_bound'] = upper_bound
         session['lower_bound_odds'] = lower_bound_odds
@@ -161,7 +171,10 @@ def simulate():
             return f"+{int(odds_value)}" if odds_value >= 100 else int(odds_value)
 
         def format_percentage(percent_value):
-            return f"+{percent_value:.2f}%" if percent_value >= 100 else f"{percent_value:.2f}%"
+            if percent_value is None:
+                return None
+            else:
+                return f"+{percent_value:.2f}%" if percent_value >= 100 else f"{percent_value:.2f}%"
 
         def format_results(results_list):
             formatted_list = []
@@ -179,17 +192,51 @@ def simulate():
         uyards_orecs = format_results(threshold_results['uyards_orecs'])
         urecs_oyards = format_results(threshold_results['urecs_oyards'])
         alt_longest_recs = format_results(threshold_results['alt_longest_recs'])
-        percent_between = format_percentage(threshold_results['percent_between'])
+        if lower_bound is not None and upper_bound is not None:
+            percent_between = format_percentage(threshold_results['percent_between'])
+            percent_between_american = i2a((threshold_results['percent_between'])/100)
+        else:
+            percent_between = None
+            percent_between_american = None
+
 
         total_time = time.time() - start_time
         print(f"Total simulation took {total_time:.2f} seconds")
 
-        middle_metrics = calculate_bet_size_and_effective_odds(lower_bound_odds, upper_bound_odds, lower_bound_stake, bet_on='outcome_1')
-        lower_bound_stake = middle_metrics['bet_size_1']
-        upper_bound_stake = middle_metrics['bet_size_2']
-        risk_amount = middle_metrics['risk_amount']
-        effective_odds = i2a(middle_metrics['effective_odds'])
+        if lower_bound is not None and upper_bound is not None:
+            # Handle the calculation of bet size and odds based on whether upper_bound_stake has a value
+            if upper_bound_stake:  # Check if upper_bound_stake is not 0
+                bet_on = 'outcome_2'
+                stake = upper_bound_stake
+            else:
+                bet_on = 'outcome_1'
+                stake = lower_bound_stake
 
+            middle_metrics = calculate_bet_size_and_effective_odds(
+                lower_bound_odds, upper_bound_odds, stake, bet_on=bet_on
+            )
+        
+            lower_bound_stake = middle_metrics['bet_size_1']
+            upper_bound_stake = middle_metrics['bet_size_2']
+            risk_amount = middle_metrics['risk_amount']
+            effective_odds = middle_metrics['effective_odds']
+            effective_american = i2a(effective_odds)
+        else:
+            # If no bet size values, set default or skip this part
+            lower_bound_stake = None
+            upper_bound_stake = None
+            risk_amount = None
+            effective_american = None
+            effective_odds = None
+
+        # Format for output
+        effective_odds = format_percentage(effective_odds * 100)
+        effective_american = format_odds(effective_american)
+        percent_between_american = format_odds(percent_between_american)
+
+        risk_amount = round(risk_amount, 2)
+        lower_bound_stake = round(lower_bound_stake, 2)
+        upper_bound_stake = round(upper_bound_stake, 2)
 
         return render_template(
             'results.html',
@@ -211,6 +258,8 @@ def simulate():
             percent_between=percent_between,
             effective_odds=effective_odds,
             risk_amount=risk_amount,
+            percent_between_american=percent_between_american,
+            effective_american=effective_american,
             )
 
     except Exception as e:

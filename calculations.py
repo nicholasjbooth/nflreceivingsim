@@ -52,7 +52,7 @@ def calculate_thresholds(games_sim_results, yard_threshold, receptions_threshold
 
     # Calculate the probability of going between 2 yard thresholds lower_bound and upper_bound
     percent_between = ((games_sim_results['Simulated_Yards'] >= lower_bound) & (games_sim_results['Simulated_Yards'] <= upper_bound)).mean() * 100
-
+        
     # Return categorized results
     return {
         'alt_recs': alt_recs,
