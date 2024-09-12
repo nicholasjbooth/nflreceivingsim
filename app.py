@@ -93,10 +93,10 @@ def simulate():
         upper_bound_odds = request.form.get('upper_bound_odds')
 
         # Convert to float/int only if a valid value is provided
-        lower_bound = float(lower_bound) if lower_bound else None
-        upper_bound = float(upper_bound) if upper_bound else None
-        lower_bound_odds = int(lower_bound_odds) if lower_bound_odds else None
-        upper_bound_odds = int(upper_bound_odds) if upper_bound_odds else None
+        lower_bound = float(lower_bound) if lower_bound else 55
+        upper_bound = float(upper_bound) if upper_bound else 75
+        lower_bound_odds = int(lower_bound_odds) if lower_bound_odds else -110
+        upper_bound_odds = int(upper_bound_odds) if upper_bound_odds else -110
 
 
        # Correct handling of bet sizes with a default of 0.0
@@ -273,4 +273,4 @@ def simulate():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080, debug=True)
