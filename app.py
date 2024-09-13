@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import nfl_data_py as nfl
 
 from flask import Flask, jsonify, render_template, request, session
 from sklearn.mixture import GaussianMixture
@@ -17,18 +18,6 @@ app.secret_key = os.environ.get(
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
-
-# Constants
-num_sims = 10000
-window = 7
-alpha = 0.915
-regression_amount = 3.05
-regression_games = window / 5
-
-receptions_thresholds = [2, 3, 4, 5, 6, 7, 8, 9]
-yards_thresholds = [25, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200]
-longest_reception_thresholds = [10, 20, 30, 40, 50]
-
 
 # Error handling
 @app.errorhandler(Exception)
@@ -77,7 +66,6 @@ def index():
 
 
 @app.route('/simulate', methods=['POST'])
-
 def simulate():
     try:
         # Start timing
@@ -95,31 +83,18 @@ def simulate():
                       f"Receptions Threshold: {receptions_threshold}, Current Yards: {current_yards}, "
                       f"Current Receptions: {current_receptions}, Time Remaining: {time_remaining}")
 
-        # Fetch and convert lower/upper bounds and odds, keeping None if not provided
-        lower_bound = request.form.get('lower_bound')
-        upper_bound = request.form.get('upper_bound')
-        lower_bound_odds = request.form.get('lower_bound_odds')
-        upper_bound_odds = request.form.get('upper_bound_odds')
-
-        # Convert to float/int only if a valid value is provided
-        lower_bound = float(lower_bound) if lower_bound else 55
-        upper_bound = float(upper_bound) if upper_bound else 75
-        lower_bound_odds = int(lower_bound_odds) if lower_bound_odds else -110
-        upper_bound_odds = int(upper_bound_odds) if upper_bound_odds else -110
+        # Fetch and convert lower/upper bounds and odds
+        lower_bound = float(request.form.get('lower_bound') or 55)
+        upper_bound = float(request.form.get('upper_bound') or 75)
+        lower_bound_odds = int(request.form.get('lower_bound_odds') or -110)
+        upper_bound_odds = int(request.form.get('upper_bound_odds') or -110)
+        lower_bound_stake = float(request.form.get('lower_bound_stake') or 0.0)
+        upper_bound_stake = float(request.form.get('upper_bound_stake') or 0.0)
 
         logging.debug(f"Bounds and Odds - Lower Bound: {lower_bound}, Upper Bound: {upper_bound}, "
                       f"Lower Bound Odds: {lower_bound_odds}, Upper Bound Odds: {upper_bound_odds}")
 
-        # Correct handling of bet sizes with a default of 0.0
-        lower_bound_stake = float(request.form.get('lower_bound_stake') or 0.0)
-        upper_bound_stake = float(request.form.get('upper_bound_stake') or 0.0)
-
-        if lower_bound_stake == 0.00 and upper_bound_stake == 0.00:
-            lower_bound_stake = 100
-
-        logging.debug(f"Stakes - Lower Bound Stake: {lower_bound_stake}, Upper Bound Stake: {upper_bound_stake}")
-
-        # Store the form inputs in the session for future use
+        # Cache session values
         session['player_name'] = player_name
         session['yard_threshold'] = yard_threshold
         session['receptions_threshold'] = receptions_threshold
@@ -133,22 +108,52 @@ def simulate():
         session['lower_bound_stake'] = lower_bound_stake
         session['upper_bound_stake'] = upper_bound_stake
 
+
+        data_start = time.time()
         logging.debug("Session values updated.")
+        df_yards, df_receptions, player_position = get_and_prepare_player_data(player_name)
+        
 
         # Time player data preparation
-        data_start = time.time()
-        df_yards, df_receptions = get_and_prepare_player_data(player_name)
+        if player_position == 'QB':
+                        # Constants for qbs
+            num_sims = 10000
+            window = 39
+            alpha = 0.99
+            regression_amount = 18.65
+            regression_games = window / 4.5
+
+            receptions_thresholds = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+            yards_thresholds = [200, 225, 250, 275, 300, 325, 350, 375, 400]
+            longest_reception_thresholds = [30, 40, 50, 60, 70]
+        else:
+            num_sims = 10000
+            window = 7
+            alpha = 0.915
+            regression_amount = 3.05
+            regression_games = window / 5
+            receptions_thresholds = [2, 3, 4, 5, 6, 7, 8, 9]
+            yards_thresholds = [25, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200]
+            longest_reception_thresholds = [10, 20, 30, 40, 50]
+
+
         logging.debug(f"Data preparation took {time.time() - data_start:.2f} seconds")
 
-        yards_per_reception = df_yards['yards_gained']
+        # Apply calculations based on the player's position
+        if player_position == 'QB':
+            # For QBs, use passer_name and completions
+            df_receptions['wtd_rec'] = df_receptions.groupby(
+                'passer_name')['completions'].transform(
+                    lambda x: x.shift(0).rolling(window, min_periods=1).apply(
+                        weighted_moving_average, raw=True, args=(alpha,)))
+        else:
+            # For non-QBs, use receiver_name and receptions
+            df_receptions['wtd_rec'] = df_receptions.groupby(
+                'receiver_name')['receptions'].transform(
+                    lambda x: x.shift(0).rolling(window, min_periods=1).apply(
+                        weighted_moving_average, raw=True, args=(alpha,)))
 
-        # Time weighted moving average calculation
-        wma_start = time.time()
-        df_receptions['wtd_rec'] = df_receptions.groupby(
-            'name')['receptions'].transform(
-                lambda x: x.shift(0).rolling(window, min_periods=1).apply(
-                    weighted_moving_average, raw=True, args=(alpha, )))
-        logging.debug(f"Weighted moving average calculation took {time.time() - wma_start:.2f} seconds")
+        logging.debug(f"Weighted moving average calculation took {time.time() - data_start:.2f} seconds")
 
         df_receptions['wtd_rec'] = df_receptions['wtd_rec'] * (
             1 - (regression_games / window)) + (regression_amount * (regression_games / window))
@@ -158,6 +163,7 @@ def simulate():
 
         # Time GMM fitting
         gmm_start = time.time()
+        yards_per_reception = df_yards['yards_gained']
         gmm = GaussianMixture(n_components=3)
         gmm.fit(yards_per_reception.values.reshape(-1, 1))
         logging.debug(f"GMM fitting took {time.time() - gmm_start:.2f} seconds")
@@ -208,16 +214,16 @@ def simulate():
         uyards_orecs = format_results(threshold_results['uyards_orecs'])
         urecs_oyards = format_results(threshold_results['urecs_oyards'])
         alt_longest_recs = format_results(threshold_results['alt_longest_recs'])
+
         if lower_bound is not None and upper_bound is not None:
             percent_between = format_percentage(threshold_results['percent_between'])
-            percent_between_american = i2a((threshold_results['percent_between'])/100)
+            percent_between_american = i2a((threshold_results['percent_between']) / 100)
         else:
             percent_between = None
             percent_between_american = None
 
-
         total_time = time.time() - start_time
-        print(f"Total simulation took {total_time:.2f} seconds")
+        logging.debug(f"Total simulation took {total_time:.2f} seconds")
 
         if lower_bound is not None and upper_bound is not None:
             # Handle the calculation of bet size and odds based on whether upper_bound_stake has a value
@@ -276,12 +282,7 @@ def simulate():
             risk_amount=risk_amount,
             percent_between_american=percent_between_american,
             effective_american=effective_american,
-            )
-
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return str(e), 500
-
+        )
 
     except Exception as e:
         logging.exception("An error occurred during simulation")
