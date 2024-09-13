@@ -141,9 +141,9 @@ def simulate():
 
         # Apply calculations based on the player's position
         if player_position == 'QB':
-            # For QBs, use passer_name and completions
+            # For QBs, use passer_name and receptions
             df_receptions['wtd_rec'] = df_receptions.groupby(
-                'passer_name')['completions'].transform(
+                'passer_name')['receptions'].transform(
                     lambda x: x.shift(0).rolling(window, min_periods=1).apply(
                         weighted_moving_average, raw=True, args=(alpha,)))
         else:

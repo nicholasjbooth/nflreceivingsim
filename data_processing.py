@@ -52,15 +52,12 @@ def get_and_prepare_player_data(player_name, seasons=[2021, 2022, 2023]):
 
     # Handle QB or non-QB positions dynamically based on the player's position
     if player_position == 'QB':
-        # For QB: return completions and yards data frames
+        # For QB: return receptions and yards data frames
         qb_data = data[data['passer_name'] == player_name].copy()
         
-        # Remove any rows where the QB is listed as a receiver (anomaly receptions)
-        qb_data = qb_data[qb_data['receiver_name'] != player_name]
-
-        # Create completions data frame for the QB
-        df_completions = qb_data[(qb_data['complete_pass'] == 1) & (qb_data['season_type'] == 'REG')] \
-            .groupby(['game_date', 'passer_name']).size().reset_index(name='completions')
+        # Create receptions data frame for the QB
+        df_receptions = qb_data[(qb_data['complete_pass'] == 1) & (qb_data['season_type'] == 'REG')] \
+            .groupby(['game_date', 'passer_name']).size().reset_index(name='receptions')
 
         # Create yards data frame for the QB with receiver and passer names
         df_yards = qb_data[qb_data['complete_pass'] == 1][['game_id', 'game_date', 'yards_gained', 'receiver_name', 'passer_name']].copy()
@@ -68,7 +65,10 @@ def get_and_prepare_player_data(player_name, seasons=[2021, 2022, 2023]):
         # All passer names will be the QB's name
         df_yards['passer_name'] = player_name
 
-        return df_yards, df_completions, player_position
+        #make the yards df a csv
+        df_yards.to_csv('qb_yards.csv', index=False)
+
+        return df_yards, df_receptions, player_position
 
     else:
         # For non-QB: return receptions and yards data frames
