@@ -90,3 +90,12 @@ print(y)
 
 z = i2a(x['effective_odds'])
 print(z)'''
+
+'''def kelly_criterion(decimal_odds, probability):
+    return ((decimal_odds * probability) - (1 - probability)) / decimal_odds'''
+
+def kelly_criterion(decimal_odds, probability):
+    return max(0,((decimal_odds - 1) * probability - (1 - probability)) / (decimal_odds - 1))
+
+'''x = kelly_criterion(1.5, .5)
+print(x)'''

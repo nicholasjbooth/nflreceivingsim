@@ -46,12 +46,19 @@ def calculate_thresholds(games_sim_results, yard_threshold, receptions_threshold
 
     # Longest reception thresholds (Alt Longest Recs)
     for threshold in longest_reception_thresholds:
-        percent_above = (games_sim_results['Longest_Reception'] > threshold).mean() * 100
+        percent_above = (games_sim_results['Longest_Reception'] >= threshold).mean() * 100
         odds = i2a(percent_above / 100)  # Convert implied probability to American odds
         alt_longest_recs.append(f"{threshold}+ yard reception: {percent_above:.2f}% {odds}")
 
     # Calculate the probability of going between 2 yard thresholds lower_bound and upper_bound
-    percent_between = ((games_sim_results['Simulated_Yards'] >= lower_bound) & (games_sim_results['Simulated_Yards'] <= upper_bound)).mean() * 100
+    percent_between = ((games_sim_results['Simulated_Yards'] > lower_bound) & (games_sim_results['Simulated_Yards'] < upper_bound)).mean() * 100
+
+    #Calculate the probability that the simulation will be above the yard threshold and account for pushes
+    exclusivley_above = (games_sim_results['Simulated_Yards'] > yard_threshold).mean() * 100
+    exclusivley_below = (games_sim_results['Simulated_Yards'] < yard_threshold).mean() * 100
+    ytop = exclusivley_above / (exclusivley_above + exclusivley_below)
+    ytup = exclusivley_below / (exclusivley_above + exclusivley_below)
+    
         
     # Return categorized results
     return {
@@ -60,5 +67,7 @@ def calculate_thresholds(games_sim_results, yard_threshold, receptions_threshold
         'uyards_orecs': uyards_orecs,
         'urecs_oyards': urecs_oyards,
         'alt_longest_recs': alt_longest_recs,
-        'percent_between': percent_between
+        'percent_between': percent_between,
+        'ytop': ytop,
+        'ytup': ytup
     }

@@ -9,7 +9,7 @@ from sklearn.mixture import GaussianMixture
 from calculations import calculate_thresholds, weighted_moving_average
 from data_processing import get_and_prepare_player_data
 from simulation import simulate_games
-from betting_tools import calculate_bet_size_and_effective_odds, i2a
+from betting_tools import calculate_bet_size_and_effective_odds, i2a, a2d, kelly_criterion
 
 # Create and configure the Flask app
 app = Flask(__name__)
@@ -41,6 +41,8 @@ def index():
     upper_bound_odds = session.get('upper_bound_odds', '')
     lower_bound_stake = session.get('lower_bound_stake', '')
     upper_bound_stake = session.get('upper_bound_stake', '')
+    ytooo = session.get('ytooo', '') #yard threshold over odds offered
+    ytuoo = session.get('ytuoo', '') #yard threshold under odds offered
 
     # Logging session values for debugging
     logging.debug(f"Session values - Player: {player_name}, Yard Threshold: {yard_threshold}, "
@@ -61,7 +63,9 @@ def index():
         lower_bound_odds=lower_bound_odds,
         upper_bound_odds=upper_bound_odds,
         lower_bound_stake=lower_bound_stake,
-        upper_bound_stake=upper_bound_stake
+        upper_bound_stake=upper_bound_stake,
+        ytooo=ytooo,
+        ytuoo=ytuoo
     )
 
 
@@ -91,6 +95,9 @@ def simulate():
         lower_bound_stake = float(request.form.get('lower_bound_stake') or 0.0)
         upper_bound_stake = float(request.form.get('upper_bound_stake') or 0.0)
 
+        ytooo = int(request.form.get('ytooo') or -110)
+        ytuoo = int(request.form.get('ytuoo') or -110)
+
         logging.debug(f"Bounds and Odds - Lower Bound: {lower_bound}, Upper Bound: {upper_bound}, "
                       f"Lower Bound Odds: {lower_bound_odds}, Upper Bound Odds: {upper_bound_odds}")
 
@@ -107,6 +114,8 @@ def simulate():
         session['upper_bound_odds'] = upper_bound_odds
         session['lower_bound_stake'] = lower_bound_stake
         session['upper_bound_stake'] = upper_bound_stake
+        session['ytooo'] = ytooo
+        session['ytuoo'] = ytuoo
 
 
         data_start = time.time()
@@ -115,9 +124,10 @@ def simulate():
         
 
         # Time player data preparation
+        bankroll = 1000
         if player_position == 'QB':
                         # Constants for qbs
-            num_sims = 10000
+            num_sims = 15000
             window = 39
             alpha = 0.99
             regression_amount = 18.65
@@ -127,7 +137,7 @@ def simulate():
             yards_thresholds = [200, 225, 250, 275, 300, 325, 350, 375, 400]
             longest_reception_thresholds = [30, 40, 50, 60, 70]
         else:
-            num_sims = 10000
+            num_sims = 15000
             window = 7
             alpha = 0.915
             regression_amount = 3.05
@@ -215,6 +225,22 @@ def simulate():
         urecs_oyards = format_results(threshold_results['urecs_oyards'])
         alt_longest_recs = format_results(threshold_results['alt_longest_recs'])
 
+        ytop = threshold_results['ytop'] #Probability the player goes over the yard threshold
+        ytup = threshold_results['ytup'] #Probability the player goes under the yard threshold
+
+        ytoood = a2d(ytooo) #Convert American odds to decimal
+        ytuood = a2d(ytuoo) #Convert American odds to decimal
+
+        ytok = kelly_criterion(ytoood, ytop) #Kelly Criterion for over
+        ytuk = kelly_criterion(ytuood, ytup) #Kelly Criterion for under
+
+        ytoba = round(ytok * .25 * bankroll,2)#Yards threshold over bet amount
+        ytuba = round(ytuk * .25 * bankroll,2)#Yards threshold under bet amount
+
+        ytoa = i2a(ytop) #YTOP American Odds
+        ytua = i2a(ytup) #YTUP American Odds
+
+
         if lower_bound is not None and upper_bound is not None:
             percent_between = format_percentage(threshold_results['percent_between'])
             percent_between_american = i2a((threshold_results['percent_between']) / 100)
@@ -260,6 +286,9 @@ def simulate():
         lower_bound_stake = round(lower_bound_stake, 2)
         upper_bound_stake = round(upper_bound_stake, 2)
 
+        ytop = format_percentage(ytop)
+        ytup = format_percentage(ytup)
+
         return render_template(
             'results.html',
             player_name=player_name,
@@ -282,6 +311,13 @@ def simulate():
             risk_amount=risk_amount,
             percent_between_american=percent_between_american,
             effective_american=effective_american,
+            ytoba=ytoba,
+            ytuba=ytuba,
+            ytoa=ytoa,
+            ytua=ytua,
+            yard_threshold=yard_threshold,
+            ytooo=ytooo,
+            ytuoo=ytuoo,
         )
 
     except Exception as e:
