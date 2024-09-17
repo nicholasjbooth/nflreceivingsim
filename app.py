@@ -184,8 +184,8 @@ def simulate():
         logging.debug(f"Simulation took {time.time() - sim_start:.2f} seconds")
 
         # Calculate medians
-        median_yards = round(games_sim_results['Simulated_Yards'].median(), 2)
-        median_longest_reception = round(games_sim_results['Longest_Reception'].median(), 2)
+        median_yards = round(games_sim_results['Simulated_Yards'].median(), 2) + current_yards
+        median_longest_reception = round(games_sim_results['Longest_Reception'].median(), 2) + current_receptions
 
         adj_average = round(adj_average, 2)
         yard_threshold = median_yards if not yard_threshold else float(yard_threshold)
