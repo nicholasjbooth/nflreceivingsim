@@ -32,7 +32,7 @@ def simulate_yards_and_longest_reception(num_receptions, gmm):
     
     return total_yards, longest_reception
 
-def simulate_games(adj_average, gmm, num_simulations):
+def simulate_games(adj_average, gmm, num_simulations, current_yards, current_receptions):
     simulated_total_yards = []
     simulated_receptions = []
     longest_receptions = []
@@ -40,8 +40,8 @@ def simulate_games(adj_average, gmm, num_simulations):
     for _ in range(num_simulations):
         num_receptions = simulate_receptions(adj_average, 1)[0]
         total_yards, longest_reception = simulate_yards_and_longest_reception(num_receptions, gmm)
-        simulated_receptions.append(num_receptions)
-        simulated_total_yards.append(total_yards)
+        simulated_receptions.append(num_receptions + current_receptions)
+        simulated_total_yards.append(total_yards + current_yards)
         longest_receptions.append(longest_reception)
 
     return pd.DataFrame({

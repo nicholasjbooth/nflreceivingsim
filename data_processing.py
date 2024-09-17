@@ -82,3 +82,5 @@ def get_and_prepare_player_data(player_name, seasons=[2021, 2022, 2023]):
         df_yards = receiver_data[receiver_data['complete_pass'] == 1][['game_id', 'game_date', 'yards_gained', 'receiver_name', 'passer_name']].copy()
 
         return df_yards, df_receptions, player_position
+
+x = get_and_prepare_player_data('Patrick Mahomes')
