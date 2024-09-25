@@ -4,7 +4,7 @@ import nfl_data_py as nfl
 import pandas as pd
 
 # Cache Data
-def cache_data(seasons=[2021, 2022, 2023]):
+def cache_data(seasons=[2021, 2022, 2023, 2024]):
     today = datetime.today().strftime('%Y-%m-%d')
     filename = f"{today}.csv"
     if os.path.exists(filename):
@@ -28,7 +28,7 @@ def cache_data(seasons=[2021, 2022, 2023]):
     return filename
 
 # Prepare Player Data Based on Position
-def get_and_prepare_player_data(player_name, seasons=[2021, 2022, 2023]):
+def get_and_prepare_player_data(player_name, seasons=[2021, 2022, 2023, 2024]):
     # Cache data if not already cached
     filename = cache_data(seasons)
 
@@ -82,5 +82,3 @@ def get_and_prepare_player_data(player_name, seasons=[2021, 2022, 2023]):
         df_yards = receiver_data[receiver_data['complete_pass'] == 1][['game_id', 'game_date', 'yards_gained', 'receiver_name', 'passer_name']].copy()
 
         return df_yards, df_receptions, player_position
-
-x = get_and_prepare_player_data('Patrick Mahomes')

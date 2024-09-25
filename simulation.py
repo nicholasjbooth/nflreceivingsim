@@ -7,18 +7,6 @@ from sklearn.mixture import GaussianMixture
 def simulate_receptions(adj_average, num_simulations):
     return np.round(np.random.poisson(adj_average, size=num_simulations))
 
-
-'''def simulate_yards_per_game(num_receptions, gmm):
-    if num_receptions == 0:
-        return 0
-    return np.sum(np.round(gmm.sample(num_receptions)[0].flatten()))
-
-
-def simulate_longest_reception(num_receptions, gmm):
-    if num_receptions == 0:
-        return 0
-    return np.max(np.round(gmm.sample(num_receptions)[0].flatten()))'''
-
 def simulate_yards_and_longest_reception(num_receptions, gmm):
     if num_receptions == 0:
         return 0, 0  # Return 0 for both total yards and longest reception

@@ -134,7 +134,7 @@ def simulate():
             regression_games = window / 4.5
 
             receptions_thresholds = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-            yards_thresholds = [200, 225, 250, 275, 300, 325, 350, 375, 400]
+            yards_thresholds = [150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400]
             longest_reception_thresholds = [30, 40, 50, 60, 70]
         else:
             num_sims = 15000
@@ -142,9 +142,9 @@ def simulate():
             alpha = 0.915
             regression_amount = 3.05
             regression_games = window / 5
-            receptions_thresholds = [2, 3, 4, 5, 6, 7, 8, 9]
+            receptions_thresholds = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
             yards_thresholds = [25, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200]
-            longest_reception_thresholds = [10, 20, 30, 40, 50]
+            longest_reception_thresholds = [10, 20, 30, 40, 50, 60]
 
 
         logging.debug(f"Data preparation took {time.time() - data_start:.2f} seconds")
