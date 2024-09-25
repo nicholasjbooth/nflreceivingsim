@@ -80,3 +80,6 @@ def calculate_bet_size_and_effective_odds(odds_1_american, odds_2_american, know
         'risk_amount': risk_amount,
         'effective_odds': effective_probability
     }
+
+def kelly_criterion(decimal_odds, probability):
+    return max(0,((decimal_odds - 1) * probability - (1 - probability)) / (decimal_odds - 1))
