@@ -19,6 +19,7 @@ app.secret_key = os.environ.get(
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
+
 # Error handling
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -41,32 +42,32 @@ def index():
     upper_bound_odds = session.get('upper_bound_odds', '')
     lower_bound_stake = session.get('lower_bound_stake', '')
     upper_bound_stake = session.get('upper_bound_stake', '')
-    ytooo = session.get('ytooo', '') #yard threshold over odds offered
-    ytuoo = session.get('ytuoo', '') #yard threshold under odds offered
+    ytooo = session.get('ytooo', '')  #yard threshold over odds offered
+    ytuoo = session.get('ytuoo', '')  #yard threshold under odds offered
 
     # Logging session values for debugging
-    logging.debug(f"Session values - Player: {player_name}, Yard Threshold: {yard_threshold}, "
-                  f"Receptions Threshold: {receptions_threshold}, Current Yards: {current_yards}, "
-                  f"Current Receptions: {current_receptions}, Time Remaining: {time_remaining}")
+    logging.debug(
+        f"Session values - Player: {player_name}, Yard Threshold: {yard_threshold}, "
+        f"Receptions Threshold: {receptions_threshold}, Current Yards: {current_yards}, "
+        f"Current Receptions: {current_receptions}, Time Remaining: {time_remaining}"
+    )
 
     # Pass the session values to the index.html template
-    return render_template(
-        'index.html',
-        player_name=player_name,
-        yard_threshold=yard_threshold,
-        receptions_threshold=receptions_threshold,
-        current_yards=current_yards,
-        current_receptions=current_receptions,
-        time_remaining=time_remaining,
-        lower_bound=lower_bound,
-        upper_bound=upper_bound,
-        lower_bound_odds=lower_bound_odds,
-        upper_bound_odds=upper_bound_odds,
-        lower_bound_stake=lower_bound_stake,
-        upper_bound_stake=upper_bound_stake,
-        ytooo=ytooo,
-        ytuoo=ytuoo
-    )
+    return render_template('index.html',
+                           player_name=player_name,
+                           yard_threshold=yard_threshold,
+                           receptions_threshold=receptions_threshold,
+                           current_yards=current_yards,
+                           current_receptions=current_receptions,
+                           time_remaining=time_remaining,
+                           lower_bound=lower_bound,
+                           upper_bound=upper_bound,
+                           lower_bound_odds=lower_bound_odds,
+                           upper_bound_odds=upper_bound_odds,
+                           lower_bound_stake=lower_bound_stake,
+                           upper_bound_stake=upper_bound_stake,
+                           ytooo=ytooo,
+                           ytuoo=ytuoo)
 
 
 @app.route('/simulate', methods=['POST'])
@@ -83,9 +84,11 @@ def simulate():
         current_yards = int(request.form.get('current_yards') or 0)
         current_receptions = int(request.form.get('current_receptions') or 0)
         time_remaining = int(request.form.get('time_remaining') or 60)
-        logging.debug(f"Form inputs - Player: {player_name}, Yard Threshold: {yard_threshold}, "
-                      f"Receptions Threshold: {receptions_threshold}, Current Yards: {current_yards}, "
-                      f"Current Receptions: {current_receptions}, Time Remaining: {time_remaining}")
+        logging.debug(
+            f"Form inputs - Player: {player_name}, Yard Threshold: {yard_threshold}, "
+            f"Receptions Threshold: {receptions_threshold}, Current Yards: {current_yards}, "
+            f"Current Receptions: {current_receptions}, Time Remaining: {time_remaining}"
+        )
 
         # Fetch and convert lower/upper bounds and odds
         lower_bound = float(request.form.get('lower_bound') or 55)
@@ -98,8 +101,10 @@ def simulate():
         ytooo = int(request.form.get('ytooo') or -110)
         ytuoo = int(request.form.get('ytuoo') or -110)
 
-        logging.debug(f"Bounds and Odds - Lower Bound: {lower_bound}, Upper Bound: {upper_bound}, "
-                      f"Lower Bound Odds: {lower_bound_odds}, Upper Bound Odds: {upper_bound_odds}")
+        logging.debug(
+            f"Bounds and Odds - Lower Bound: {lower_bound}, Upper Bound: {upper_bound}, "
+            f"Lower Bound Odds: {lower_bound_odds}, Upper Bound Odds: {upper_bound_odds}"
+        )
 
         # Cache session values
         session['player_name'] = player_name
@@ -107,7 +112,8 @@ def simulate():
         session['receptions_threshold'] = receptions_threshold
         session['current_yards'] = current_yards
         session['current_receptions'] = current_receptions
-        session['time_remaining'] = None if time_remaining == 60 else time_remaining
+        session[
+            'time_remaining'] = None if time_remaining == 60 else time_remaining
         session['lower_bound'] = lower_bound
         session['upper_bound'] = upper_bound
         session['lower_bound_odds'] = lower_bound_odds
@@ -117,16 +123,15 @@ def simulate():
         session['ytooo'] = ytooo
         session['ytuoo'] = ytuoo
 
-
         data_start = time.time()
         logging.debug("Session values updated.")
-        df_yards, df_receptions, player_position = get_and_prepare_player_data(player_name)
-        
+        df_yards, df_receptions, player_position = get_and_prepare_player_data(
+            player_name)
 
         # Time player data preparation
         bankroll = 1000
         if player_position == 'QB':
-                        # Constants for qbs
+            # Constants for qbs
             num_sims = 15000
             window = 39
             alpha = 0.99
@@ -134,7 +139,9 @@ def simulate():
             regression_games = window / 4.5
 
             receptions_thresholds = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-            yards_thresholds = [150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400]
+            yards_thresholds = [
+                150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400
+            ]
             longest_reception_thresholds = [30, 40, 50, 60, 70]
         else:
             num_sims = 15000
@@ -143,11 +150,13 @@ def simulate():
             regression_amount = 3.05
             regression_games = window / 5
             receptions_thresholds = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-            yards_thresholds = [25, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200]
+            yards_thresholds = [
+                25, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200
+            ]
             longest_reception_thresholds = [10, 20, 30, 40, 50, 60]
 
-
-        logging.debug(f"Data preparation took {time.time() - data_start:.2f} seconds")
+        logging.debug(
+            f"Data preparation took {time.time() - data_start:.2f} seconds")
 
         # Apply calculations based on the player's position
         if player_position == 'QB':
@@ -155,18 +164,21 @@ def simulate():
             df_receptions['wtd_rec'] = df_receptions.groupby(
                 'passer_name')['receptions'].transform(
                     lambda x: x.shift(0).rolling(window, min_periods=1).apply(
-                        weighted_moving_average, raw=True, args=(alpha,)))
+                        weighted_moving_average, raw=True, args=(alpha, )))
         else:
             # For non-QBs, use receiver_name and receptions
             df_receptions['wtd_rec'] = df_receptions.groupby(
                 'receiver_name')['receptions'].transform(
                     lambda x: x.shift(0).rolling(window, min_periods=1).apply(
-                        weighted_moving_average, raw=True, args=(alpha,)))
+                        weighted_moving_average, raw=True, args=(alpha, )))
 
-        logging.debug(f"Weighted moving average calculation took {time.time() - data_start:.2f} seconds")
+        logging.debug(
+            f"Weighted moving average calculation took {time.time() - data_start:.2f} seconds"
+        )
 
         df_receptions['wtd_rec'] = df_receptions['wtd_rec'] * (
-            1 - (regression_games / window)) + (regression_amount * (regression_games / window))
+            1 - (regression_games / window)) + (regression_amount *
+                                                (regression_games / window))
         average_receptions = df_receptions['wtd_rec'].iloc[-1]
         adj_average = average_receptions * (time_remaining / 60)
         logging.debug(f"Adjusted Average: {adj_average}")
@@ -176,31 +188,40 @@ def simulate():
         yards_per_reception = df_yards['yards_gained']
         gmm = GaussianMixture(n_components=3)
         gmm.fit(yards_per_reception.values.reshape(-1, 1))
-        logging.debug(f"GMM fitting took {time.time() - gmm_start:.2f} seconds")
+        logging.debug(
+            f"GMM fitting took {time.time() - gmm_start:.2f} seconds")
 
         # Time simulation
         sim_start = time.time()
-        games_sim_results = simulate_games(adj_average, gmm, num_sims, current_yards, current_receptions)
+        games_sim_results = simulate_games(adj_average, gmm, num_sims,
+                                           current_yards, current_receptions)
         logging.debug(f"Simulation took {time.time() - sim_start:.2f} seconds")
 
         # Calculate medians
         median_yards = round(games_sim_results['Simulated_Yards'].median(), 2)
-        median_longest_reception = round(games_sim_results['Longest_Reception'].median(), 2)
+        median_longest_reception = round(
+            games_sim_results['Longest_Reception'].median(), 2)
 
         adj_average = round(adj_average, 2)
-        yard_threshold = median_yards if not yard_threshold else float(yard_threshold)
-        receptions_threshold = df_receptions['receptions'].median() if not receptions_threshold else float(receptions_threshold)
+        yard_threshold = median_yards if not yard_threshold else float(
+            yard_threshold)
+        receptions_threshold = df_receptions['receptions'].median(
+        ) if not receptions_threshold else float(receptions_threshold)
 
         # Time threshold calculation
         threshold_start = time.time()
-        threshold_results = calculate_thresholds(games_sim_results, yard_threshold,
-                                                 receptions_threshold, receptions_thresholds,
-                                                 yards_thresholds, longest_reception_thresholds, lower_bound, upper_bound)
-        logging.debug(f"Threshold calculation took {time.time() - threshold_start:.2f} seconds")
+        threshold_results = calculate_thresholds(
+            games_sim_results, yard_threshold, receptions_threshold,
+            receptions_thresholds, yards_thresholds,
+            longest_reception_thresholds, lower_bound, upper_bound)
+        logging.debug(
+            f"Threshold calculation took {time.time() - threshold_start:.2f} seconds"
+        )
 
         # Formatting results
         def format_odds(odds_value):
-            return f"+{int(odds_value)}" if odds_value >= 100 else int(odds_value)
+            return f"+{int(odds_value)}" if odds_value >= 100 else int(
+                odds_value)
 
         def format_percentage(percent_value):
             if percent_value is None:
@@ -223,27 +244,33 @@ def simulate():
         alt_yards = format_results(threshold_results['alt_yards'])
         uyards_orecs = format_results(threshold_results['uyards_orecs'])
         urecs_oyards = format_results(threshold_results['urecs_oyards'])
-        alt_longest_recs = format_results(threshold_results['alt_longest_recs'])
+        alt_longest_recs = format_results(
+            threshold_results['alt_longest_recs'])
 
-        ytop = threshold_results['ytop'] #Probability the player goes over the yard threshold
-        ytup = threshold_results['ytup'] #Probability the player goes under the yard threshold
+        ytop = threshold_results[
+            'ytop']  #Probability the player goes over the yard threshold
+        ytup = threshold_results[
+            'ytup']  #Probability the player goes under the yard threshold
 
-        ytoood = a2d(ytooo) #Convert American odds to decimal
-        ytuood = a2d(ytuoo) #Convert American odds to decimal
+        ytoood = a2d(ytooo)  #Convert American odds to decimal
+        ytuood = a2d(ytuoo)  #Convert American odds to decimal
 
-        ytok = kelly_criterion(ytoood, ytop) #Kelly Criterion for over
-        ytuk = kelly_criterion(ytuood, ytup) #Kelly Criterion for under
+        ytok = kelly_criterion(ytoood, ytop)  #Kelly Criterion for over
+        ytuk = kelly_criterion(ytuood, ytup)  #Kelly Criterion for under
 
-        ytoba = round(ytok * .25 * bankroll,2)#Yards threshold over bet amount
-        ytuba = round(ytuk * .25 * bankroll,2)#Yards threshold under bet amount
+        ytoba = round(ytok * .25 * bankroll,
+                      2)  #Yards threshold over bet amount
+        ytuba = round(ytuk * .25 * bankroll,
+                      2)  #Yards threshold under bet amount
 
-        ytoa = i2a(ytop) #YTOP American Odds
-        ytua = i2a(ytup) #YTUP American Odds
-
+        ytoa = i2a(ytop)  #YTOP American Odds
+        ytua = i2a(ytup)  #YTUP American Odds
 
         if lower_bound is not None and upper_bound is not None:
-            percent_between = format_percentage(threshold_results['percent_between'])
-            percent_between_american = i2a((threshold_results['percent_between']) / 100)
+            percent_between = format_percentage(
+                threshold_results['percent_between'])
+            percent_between_american = i2a(
+                (threshold_results['percent_between']) / 100)
         else:
             percent_between = None
             percent_between_american = None
@@ -261,9 +288,8 @@ def simulate():
                 stake = lower_bound_stake
 
             middle_metrics = calculate_bet_size_and_effective_odds(
-                lower_bound_odds, upper_bound_odds, stake, bet_on=bet_on
-            )
-        
+                lower_bound_odds, upper_bound_odds, stake, bet_on=bet_on)
+
             lower_bound_stake = middle_metrics['bet_size_1']
             upper_bound_stake = middle_metrics['bet_size_2']
             risk_amount = middle_metrics['risk_amount']
