@@ -45,6 +45,7 @@ def index():
     ytooo = session.get('ytooo', '')  #yard threshold over odds offered
     ytuoo = session.get('ytuoo', '')  #yard threshold under odds offered
 
+    #receiver_names = pd.read_csv(cache_data())['receiver_name'].unique().tolist()
     receiver_names = pd.read_csv(cache_data(), dtype=str, low_memory=False)["receiver_name"].unique().tolist()
 
     # Logging session values for debugging

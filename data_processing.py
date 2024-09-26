@@ -3,6 +3,12 @@ from datetime import datetime
 import nfl_data_py as nfl
 import pandas as pd
 
+# Function to load data in chunks and concatenate it
+def load_data_in_chunks(file_path, chunksize=10000):
+    df_list = []
+    for chunk in pd.read_csv(file_path, chunksize=chunksize, low_memory=False):
+        df_list.append(chunk)
+    return pd.concat(df_list, axis=0)
 
 # Cache Data
 def cache_data(seasons=[2022, 2023, 2024]):
@@ -11,14 +17,15 @@ def cache_data(seasons=[2022, 2023, 2024]):
     if os.path.exists(filename):
         return filename
 
+    # Fetch and process play-by-play data
     data = nfl.import_pbp_data(seasons)
     data.drop(columns=['name'], inplace=True)
 
+    # Fetch player IDs and clean up
     players = nfl.import_ids()
-    players = players.dropna(subset=['gsis_id']).drop_duplicates(
-        subset=['gsis_id'])
+    players = players.dropna(subset=['gsis_id']).drop_duplicates(subset=['gsis_id'])
 
-    # Merge receiver and passer separately to keep their names distinct
+    # Merge receiver and passer names separately
     data = data.merge(
         players[['gsis_id', 'name']],
         how='left',
@@ -33,10 +40,9 @@ def cache_data(seasons=[2022, 2023, 2024]):
     # Drop unnecessary gsis_id columns
     data.drop(columns=['gsis_id_x', 'gsis_id_y'], inplace=True)
 
-    # Save the data to a CSV file
+    # Save the processed data to CSV in chunks
     data.to_csv(filename, index=False)
     return filename
-
 
 # Prepare Player Data Based on Position
 def get_and_prepare_player_data(player_name, seasons=[2022, 2023, 2024]):
@@ -45,8 +51,7 @@ def get_and_prepare_player_data(player_name, seasons=[2022, 2023, 2024]):
 
     # Load player information to find their position
     players = nfl.import_ids()
-    player_info = players[players['name'] == player_name].iloc[
-        0]  # Get player's info
+    player_info = players[players['name'] == player_name].iloc[0]  # Get player's info
     player_position = player_info['position']  # Extract the player's position
 
     # Specify only the columns you care about
@@ -56,8 +61,8 @@ def get_and_prepare_player_data(player_name, seasons=[2022, 2023, 2024]):
         'passer_name'
     ]
 
-    # Read only the necessary columns from the cached CSV file
-    data = pd.read_csv(filename, usecols=columns_to_use, low_memory=False)
+    # Load data in chunks using the chunked function
+    data = load_data_in_chunks(filename)
 
     # Convert 'game_date' to datetime format
     data['game_date'] = pd.to_datetime(data['game_date'], errors='coerce')
@@ -83,7 +88,7 @@ def get_and_prepare_player_data(player_name, seasons=[2022, 2023, 2024]):
         # All passer names will be the QB's name
         df_yards['passer_name'] = player_name
 
-        #make the yards df a csv
+        # Save the yards dataframe to CSV for debugging or future use
         df_yards.to_csv('qb_yards.csv', index=False)
 
         return df_yards, df_receptions, player_position
