@@ -2,12 +2,12 @@ import logging
 import os
 import time
 import nfl_data_py as nfl
-
+import pandas as pd
 from flask import Flask, jsonify, render_template, request, session
 from sklearn.mixture import GaussianMixture
 
 from calculations import calculate_thresholds, weighted_moving_average
-from data_processing import get_and_prepare_player_data
+from data_processing import get_and_prepare_player_data, cache_data
 from simulation import simulate_games
 from betting_tools import calculate_bet_size_and_effective_odds, i2a, a2d, kelly_criterion
 
@@ -45,6 +45,8 @@ def index():
     ytooo = session.get('ytooo', '')  #yard threshold over odds offered
     ytuoo = session.get('ytuoo', '')  #yard threshold under odds offered
 
+    receiver_names = pd.read_csv(cache_data())['receiver_name'].unique().tolist()
+
     # Logging session values for debugging
     logging.debug(
         f"Session values - Player: {player_name}, Yard Threshold: {yard_threshold}, "
@@ -67,7 +69,8 @@ def index():
                            lower_bound_stake=lower_bound_stake,
                            upper_bound_stake=upper_bound_stake,
                            ytooo=ytooo,
-                           ytuoo=ytuoo)
+                           ytuoo=ytuoo,
+                           receiver_names=receiver_names)
 
 
 @app.route('/simulate', methods=['POST'])
