@@ -47,7 +47,9 @@ def index():
 
     #receiver_names = pd.read_csv(cache_data())['receiver_name'].unique().tolist()
     #receiver_names = pd.read_csv(cache_data(), dtype=str, low_memory=False)["receiver_name"].unique().tolist()
+    #receiver_names = pd.read_csv(cache_data(), dtype={'receiver_name': str}, low_memory=False)["receiver_name"].unique().tolist()receiver_names = pd.read_csv(cache_data(), dtype={'receiver_name': str}, low_memory=False)
     receiver_names = pd.read_csv(cache_data(), dtype={'receiver_name': str}, low_memory=False)["receiver_name"].unique().tolist()
+
 
     # Logging session values for debugging
     logging.debug(
