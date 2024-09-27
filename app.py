@@ -46,14 +46,17 @@ def index():
     ytuoo = session.get('ytuoo', '')  #yard threshold under odds offered
 
         # Import player data from NFL data
-    players = nfl.import_ids()
+    '''players = nfl.import_ids()
 
     # Filter the players DataFrame to include only WR, RB, TE, and QB positions
     filtered_players = players[players['position'].isin(['WR', 'RB', 'TE', 'QB'])]
 
     # Extract the names of the filtered players
     player_names = filtered_players['name'].unique().tolist()
-    print(player_names)
+    print(player_names)'''
+
+    player_names_df = pd.read_csv('player_names.csv')
+    player_names = player_names_df['player_name'].tolist()
 
 
     #receiver_names = pd.read_csv(cache_data(), dtype=str, low_memory=False)["receiver_name"].unique().tolist()

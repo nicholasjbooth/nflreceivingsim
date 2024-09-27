@@ -42,6 +42,18 @@ def cache_data(seasons=[2022, 2023, 2024]):
 
     # Save the processed data to CSV in chunks
     data.to_csv(filename, index=False)
+
+    # Extract unique player names from both receiver and passer columns
+    receiver_names = data['receiver_name'].dropna().unique().tolist()
+    passer_names = data['passer_name'].dropna().unique().tolist()
+
+    # Combine the lists and remove duplicates
+    unique_player_names = list(set(receiver_names + passer_names))
+
+    # Save the unique player names to player_names.csv
+    player_names_df = pd.DataFrame(unique_player_names, columns=['player_name'])
+    player_names_df.to_csv('player_names.csv', index=False)
+
     return filename
 
 # Prepare Player Data Based on Position
