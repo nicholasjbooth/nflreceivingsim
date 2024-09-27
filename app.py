@@ -57,6 +57,7 @@ def index():
 
     player_names_df = pd.read_csv('player_names.csv')
     player_names = player_names_df['player_name'].tolist()
+    player_names = player_names.sort()
 
 
     #receiver_names = pd.read_csv(cache_data(), dtype=str, low_memory=False)["receiver_name"].unique().tolist()
