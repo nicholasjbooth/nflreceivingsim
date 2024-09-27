@@ -82,9 +82,11 @@
         <legend>Player Information</legend>
         <label for="player_name">Player Name</label>
         <input type="text" id="player_name" name="player_name" list="player_name_list" placeholder="Enter player's name" value="{{ player_name or '' }}" required>
+        
+        <!-- Use player_names instead of receiver_names -->
         <datalist id="player_name_list">
-            {% for receiver_name in receiver_names %}
-            <option value="{{ receiver_name }}">
+            {% for player_name in player_names %}
+                <option value="{{ player_name }}">
             {% endfor %}
         </datalist>
     </fieldset>

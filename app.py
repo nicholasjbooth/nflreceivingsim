@@ -45,10 +45,20 @@ def index():
     ytooo = session.get('ytooo', '')  #yard threshold over odds offered
     ytuoo = session.get('ytuoo', '')  #yard threshold under odds offered
 
-    #receiver_names = pd.read_csv(cache_data())['receiver_name'].unique().tolist()
+        # Import player data from NFL data
+    players = nfl.import_ids()
+
+    # Filter the players DataFrame to include only WR, RB, TE, and QB positions
+    filtered_players = players[players['position'].isin(['WR', 'RB', 'TE', 'QB'])]
+
+    # Extract the names of the filtered players
+    player_names = filtered_players['name'].unique().tolist()
+    print(player_names)
+
+
     #receiver_names = pd.read_csv(cache_data(), dtype=str, low_memory=False)["receiver_name"].unique().tolist()
     #receiver_names = pd.read_csv(cache_data(), dtype={'receiver_name': str}, low_memory=False)["receiver_name"].unique().tolist()receiver_names = pd.read_csv(cache_data(), dtype={'receiver_name': str}, low_memory=False)
-    receiver_names = pd.read_csv(cache_data(), dtype={'receiver_name': str}, low_memory=False)["receiver_name"].unique().tolist()
+    #receiver_names = pd.read_csv(cache_data(), dtype={'receiver_name': str}, low_memory=False)["receiver_name"].unique().tolist()
 
 
     # Logging session values for debugging
@@ -74,7 +84,7 @@ def index():
                            upper_bound_stake=upper_bound_stake,
                            ytooo=ytooo,
                            ytuoo=ytuoo,
-                           receiver_names=receiver_names)
+                           player_names=player_names)
 
 
 @app.route('/simulate', methods=['POST'])
