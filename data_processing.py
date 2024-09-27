@@ -120,3 +120,5 @@ def get_and_prepare_player_data(player_name, seasons=[2022, 2023, 2024]):
         ]].copy()
 
         return df_yards, df_receptions, player_position
+
+get_and_prepare_player_data("Mark Andrews")
