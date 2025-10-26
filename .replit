@@ -1,0 +1,17 @@
+run = "pip install -r requirements.txt && gunicorn -w 4 -b 0.0.0.0:8080 app:app"
+
+entrypoint = "app.py"
+modules = ["python-3.11"]
+
+hidden = [".pythonlibs"]
+
+[nix]
+channel = "stable-24_05"
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[deployment]
+deploymentTarget = "cloudrun"
+run = ["sh", "-c", "gunicorn app:app --bind 0.0.0.0:8080"]

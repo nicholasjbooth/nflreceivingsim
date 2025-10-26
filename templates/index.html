@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Simulation Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 24px;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 95%;
+            margin: 20px auto;
+            box-sizing: border-box;
+        }
+        fieldset {
+            border: none;
+            margin-bottom: 15px;
+            padding: 0;
+        }
+        legend {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        label, input {
+            font-size: 18px;
+            display: block;
+            margin: 10px 0;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        input[type="submit"], input[type="button"] {
+            margin-top: 20px;
+            padding: 12px 15px;
+            font-size: 18px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #428bca;
+        }
+        input[type="button"] {
+            background-color: #d9534f;
+        }
+        #player_name_dropdown {
+            position: relative;
+        }
+        #dropdown_list {
+            position: absolute;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+        }
+        #dropdown_list div {
+            padding: 8px;
+            cursor: pointer;
+        }
+        #dropdown_list div:hover {
+            background-color: #eee;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+            label, input {
+                font-size: 16px;
+            }
+            input[type="submit"], input[type="button"] {
+                font-size: 16px;
+            }
+        }
+    </style>
+    <script>
+        const playerNames = {{ player_names|tojson|safe }}; // Assuming 'player_names' is passed from the server
+
+        function clearForm() {
+            document.getElementById("player_name").value = "";
+            document.getElementById("receptions_threshold").value = "";
+            document.getElementById("yard_threshold").value = "";
+            document.getElementById("time_remaining").value = "";
+            document.getElementById("current_receptions").value = "";
+            document.getElementById("current_yards").value = "";
+            document.getElementById("lower_bound").value = "";
+            document.getElementById("lower_bound_odds").value = "";
+            document.getElementById("lower_bound_stake").value = "";
+            document.getElementById("upper_bound").value = "";
+            document.getElementById("upper_bound_odds").value = "";
+            document.getElementById("upper_bound_stake").value = "";
+        }
+
+        function filterPlayers() {
+            const input = document.getElementById('player_name');
+            const filter = input.value.toLowerCase();
+            const dropdown = document.getElementById('dropdown_list');
+            dropdown.innerHTML = ''; // Clear previous dropdown content
+
+            if (filter) {
+                const filteredNames = playerNames.filter(name => name.toLowerCase().startsWith(filter));
+
+                if (filteredNames.length > 0) {
+                    dropdown.style.display = 'block'; // Show dropdown
+                    filteredNames.forEach(name => {
+                        const div = document.createElement('div');
+                        div.innerText = name;
+                        div.onclick = function () {
+                            input.value = name; // Set the input field with the clicked name
+                            dropdown.style.display = 'none'; // Hide dropdown
+                        };
+                        dropdown.appendChild(div);
+                    });
+                } else {
+                    dropdown.style.display = 'none'; // Hide dropdown if no match
+                }
+            } else {
+                dropdown.style.display = 'none'; // Hide dropdown if input is empty
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('dropdown_list');
+            if (!dropdown.contains(event.target) && event.target.id !== 'player_name') {
+                dropdown.style.display = 'none'; // Hide dropdown when clicking outside
+            }
+        });
+    </script>
+</head>
+<body>
+
+<h1>Enter Simulation Details</h1>
+
+<form action="/simulate" method="POST">
+    <fieldset>
+        <legend>Player Information</legend>
+        <label for="player_name">Player Name</label>
+        <div id="player_name_dropdown">
+            <input type="text" id="player_name" name="player_name" placeholder="Enter player's name" value="{{ player_name or '' }}" onkeyup="filterPlayers()" autocomplete="off" required>
+            <div id="dropdown_list"></div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Thresholds</legend>
+        <label for="receptions_threshold">Receptions Threshold (optional)</label>
+        <input type="number" id="receptions_threshold" name="receptions_threshold" step="0.1" placeholder="e.g., 5.5" value="{{ receptions_threshold or '' }}">
+
+        <label for="yard_threshold">Yard Threshold (optional)</label>
+        <input type="number" id="yard_threshold" name="yard_threshold" step="0.1" placeholder="e.g., 50.5" value="{{ yard_threshold or '' }}">
+
+        <label for="ytooo">Over Odds (optional)</label>
+        <input type="number" id="ytooo" name="ytooo" step="1" placeholder="Default -110" value="{{ ytooo or '' }}">
+
+        <label for="ytuoo">Under Odds (optional)</label>
+        <input type="number" id="ytuoo" name="ytuoo" step="1" placeholder="Default -110" value="{{ ytuoo or '' }}">
+    </fieldset>
+
+    <fieldset>
+        <legend>Current Game Stats</legend>
+        <label for="time_remaining">Time Remaining (optional)</label>
+        <input type="number" id="time_remaining" name="time_remaining" step="1" placeholder="e.g., 60 (minutes)" value="{{ time_remaining or '' }}">
+
+        <label for="current_receptions">Current Receptions (optional)</label>
+        <input type="number" id="current_receptions" name="current_receptions" step="1" placeholder="e.g., 3" value="{{ current_receptions or '' }}">
+
+        <label for="current_yards">Current Yards (optional)</label>
+        <input type="number" id="current_yards" name="current_yards" step="1" placeholder="e.g., 40" value="{{ current_yards or '' }}">
+    </fieldset>
+
+    <fieldset>
+        <legend>Middle/Arb Calculator</legend>
+    
+        <label for="lower_bound">Lower Bound (optional)</label>
+        <input type="number" id="lower_bound" name="lower_bound" step=".5" placeholder="e.g., 45 (yards)" value="{{ lower_bound or '' }}">
+    
+        <label for="lower_bound_odds">Odds (optional)</label>
+        <input type="number" id="lower_bound_odds" name="lower_bound_odds" step="1" placeholder="Default -110" value="{{ lower_bound_odds or '' }}">
+    
+        <label for="lower_bound_stake">Stake (optional)</label>
+        <input type="number" id="lower_bound_stake" name="lower_bound_stake" step=".01" placeholder="e.g., 50" value="{{ lower_bound_stake or '' }}" oninput="clearOtherStake('lower_bound_stake', 'upper_bound_stake')">
+    
+        <label for="upper_bound">Upper Bound (optional)</label>
+        <input type="number" id="upper_bound" name="upper_bound" step=".5" placeholder="e.g., 55 (yards)" value="{{ upper_bound or '' }}">
+    
+        <label for="upper_bound_odds">Odds (optional)</label>
+        <input type="number" id="upper_bound_odds" name="upper_bound_odds" step="1" placeholder="Default -110" value="{{ upper_bound_odds or '' }}">
+    
+        <label for="upper_bound_stake">Stake (optional)</label>
+        <input type="number" id="upper_bound_stake" name="upper_bound_stake" step=".01" placeholder="e.g., 100" value="{{ upper_bound_stake or '' }}" oninput="clearOtherStake('upper_bound_stake', 'lower_bound_stake')">
+    </fieldset>
+    
+    <script>
+        function clearOtherStake(changedFieldId, otherFieldId) {
+            const otherField = document.getElementById(otherFieldId);
+            
+            otherField.value = '';
+        }
+    </script>
+    
+    <input type="submit" value="Run Simulation">
+    <input type="button" value="Clear All" onclick="clearForm()">
+</form>
+
+</body>
+</html>

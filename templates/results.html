@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ player_name }} - Simulation Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #000000;
+            color: #00ff00;
+            padding: 0;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background-color: #0a0a0a;
+        }
+
+        .header {
+            background-color: #1a1a1a;
+            border-bottom: 2px solid #00ff00;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 2px;
+        }
+
+        .header .timestamp {
+            font-size: 12px;
+            color: #00ff00;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .data-section {
+            border-bottom: 1px solid #333;
+            padding: 20px 30px;
+        }
+
+        .section-header {
+            font-size: 11px;
+            color: #00ff00;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0;
+            border: 1px solid #333;
+        }
+
+        .data-cell {
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+            padding: 12px 15px;
+            background-color: #0a0a0a;
+        }
+
+        .data-cell:last-child {
+            border-right: none;
+        }
+
+        .data-label {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .data-value {
+            font-size: 16px;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .odds-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            border: 1px solid #333;
+        }
+
+        .odds-table th {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            padding: 10px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 1px;
+            border: 1px solid #333;
+        }
+
+        .odds-table td {
+            padding: 8px 10px;
+            border: 1px solid #333;
+            color: #ffffff;
+            background-color: #0a0a0a;
+        }
+
+        .odds-table tr:hover td {
+            background-color: #1a1a1a;
+        }
+
+        .middle-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0;
+            border: 1px solid #333;
+            margin-top: 15px;
+        }
+
+        .middle-column {
+            border-right: 1px solid #333;
+            padding: 15px;
+            background-color: #0a0a0a;
+        }
+
+        .middle-column:last-child {
+            border-right: none;
+        }
+
+        .middle-column h3 {
+            font-size: 10px;
+            color: #00ff00;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .middle-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+            font-size: 12px;
+        }
+
+        .middle-row:last-child {
+            border-bottom: none;
+        }
+
+        .middle-label {
+            color: #888;
+        }
+
+        .middle-value {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .projection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0;
+        }
+
+        .projection-column {
+            border-right: 1px solid #333;
+            padding: 15px;
+        }
+
+        .projection-column:last-child {
+            border-right: none;
+        }
+
+        .projection-column h3 {
+            font-size: 10px;
+            color: #00ff00;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .projection-item {
+            padding: 6px 0;
+            font-size: 11px;
+            color: #ffffff;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .projection-item:last-child {
+            border-bottom: none;
+        }
+
+        .game-log-section {
+            border-top: 2px solid #00ff00;
+        }
+
+        .game-log-header {
+            background-color: #1a1a1a;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .game-log-header h2 {
+            font-size: 11px;
+            color: #00ff00;
+            letter-spacing: 1.5px;
+        }
+
+        .game-log-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .game-log-stats span {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .game-log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .game-log-table th {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            padding: 10px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 1px;
+            border: 1px solid #333;
+        }
+
+        .game-log-table td {
+            padding: 8px 10px;
+            border: 1px solid #333;
+            color: #ffffff;
+            background-color: #0a0a0a;
+        }
+
+        .game-log-table tbody tr:hover td {
+            background-color: #1a1a1a;
+        }
+
+        .win {
+            color: #00ff00;
+            font-weight: 700;
+        }
+
+        .loss {
+            color: #ff0000;
+            font-weight: 700;
+        }
+
+        .targets-qbs {
+            color: #888;
+            font-size: 10px;
+        }
+
+        .positive {
+            color: #00ff00;
+        }
+
+        .negative {
+            color: #ff0000;
+        }
+
+        .neutral {
+            color: #ffff00;
+        }
+
+        .return-section {
+            padding: 20px 30px;
+            text-align: center;
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
+        }
+
+        .return-button {
+            display: inline-block;
+            padding: 12px 40px;
+            background-color: #0a0a0a;
+            color: #00ff00;
+            text-decoration: none;
+            border: 2px solid #00ff00;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+        }
+
+        .return-button:hover {
+            background-color: #00ff00;
+            color: #000000;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .middle-data {
+                grid-template-columns: 1fr;
+            }
+
+            .projection-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .game-log-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .game-log-stats {
+                flex-direction: column;
+                gap: 5px;
+                text-align: left;
+            }
+
+            .game-log-table {
+                font-size: 9px;
+            }
+
+            .game-log-table th,
+            .game-log-table td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>{{ player_name }}</h1>
+        <div class="timestamp">SIMULATION RESULTS</div>
+    </div>
+
+    <div class="content">
+        <!-- Core Metrics -->
+        <div class="data-section">
+            <div class="section-header">CORE METRICS</div>
+            <div class="data-grid">
+                <div class="data-cell">
+                    <div class="data-label">MEDIAN YARDS</div>
+                    <div class="data-value">{{ median_yards }}</div>
+                </div>
+                <div class="data-cell">
+                    <div class="data-label">EXPECTED RECEPTIONS</div>
+                    <div class="data-value">{{ adj_average }}</div>
+                </div>
+                <div class="data-cell">
+                    <div class="data-label">LONGEST RECEPTION</div>
+                    <div class="data-value">{{ median_longest_reception }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fair Value -->
+        <div class="data-section">
+            <div class="section-header">FAIR VALUE ANALYSIS</div>
+            <table class="odds-table">
+                <thead>
+                    <tr>
+                        <th>POSITION</th>
+                        <th>THRESHOLD</th>
+                        <th>IMPLIED ODDS</th>
+                        <th>RECOMMENDED STAKE</th>
+                        <th>OFFERED ODDS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OVER</td>
+                        <td>{{ yard_threshold }} YDS</td>
+                        <td>{{ ytoa }}</td>
+                        <td>${{ ytoba }}</td>
+                        <td>{{ ytooo }}</td>
+                    </tr>
+                    <tr>
+                        <td>UNDER</td>
+                        <td>{{ yard_threshold }} YDS</td>
+                        <td>{{ ytua }}</td>
+                        <td>${{ ytuba }}</td>
+                        <td>{{ ytuoo }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Middle Opportunity -->
+        <div class="data-section">
+            <div class="section-header">MIDDLE OPPORTUNITY</div>
+            <div class="middle-data">
+                <div class="middle-column">
+                    <h3>LOWER BOUND</h3>
+                    <div class="middle-row">
+                        <span class="middle-label">YARDS</span>
+                        <span class="middle-value">{{ lower_bound }}</span>
+                    </div>
+                    <div class="middle-row">
+                        <span class="middle-label">ODDS</span>
+                        <span class="middle-value">{{ lower_bound_odds }}</span>
+                    </div>
+                    <div class="middle-row">
+                        <span class="middle-label">STAKE</span>
+                        <span class="middle-value">${{ lower_bound_stake }}</span>
+                    </div>
+                </div>
+                <div class="middle-column">
+                    <h3>UPPER BOUND</h3>
+                    <div class="middle-row">
+                        <span class="middle-label">YARDS</span>
+                        <span class="middle-value">{{ upper_bound }}</span>
+                    </div>
+                    <div class="middle-row">
+                        <span class="middle-label">ODDS</span>
+                        <span class="middle-value">{{ upper_bound_odds }}</span>
+                    </div>
+                    <div class="middle-row">
+                        <span class="middle-label">STAKE</span>
+                        <span class="middle-value">${{ upper_bound_stake }}</span>
+                    </div>
+                </div>
+                <div class="middle-column">
+                    <h3>EDGE ANALYSIS</h3>
+                    <div class="middle-row">
+                        <span class="middle-label">BREAKEVEN</span>
+                        <span class="middle-value">{{ effective_odds }}</span>
+                    </div>
+                    <div class="middle-row">
+                        <span class="middle-label">ACTUAL</span>
+                        <span class="middle-value">{{ percent_between }}</span>
+                    </div>
+                    <div class="middle-row">
+                        <span class="middle-label">IMPLIED</span>
+                        <span class="middle-value">{{ percent_between_american }}</span>
+                    </div>
+                    <div class="middle-row">
+                        <span class="middle-label">RISK</span>
+                        <span class="middle-value">${{ risk_amount }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projections -->
+        <div class="data-section">
+            <div class="section-header">ALTERNATE LINES</div>
+            <div class="projection-grid">
+                <div class="projection-column">
+                    <h3>RECEPTIONS</h3>
+                    {% for result in alt_recs %}
+                        <div class="projection-item">{{ result }}</div>
+                    {% endfor %}
+                </div>
+                <div class="projection-column">
+                    <h3>YARDS</h3>
+                    {% for result in alt_yards %}
+                        <div class="projection-item">{{ result }}</div>
+                    {% endfor %}
+                </div>
+                <div class="projection-column">
+                    <h3>LONGEST RECEPTION</h3>
+                    {% for result in alt_longest_recs %}
+                        <div class="projection-item">{{ result }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Combo Projections -->
+        <div class="data-section">
+            <div class="section-header">COMBINATION SCENARIOS</div>
+            <div class="projection-grid">
+                <div class="projection-column">
+                    <h3>UNDER YDS + OVER REC</h3>
+                    {% for result in uyards_orecs %}
+                        <div class="projection-item">{{ result }}</div>
+                    {% endfor %}
+                </div>
+                <div class="projection-column">
+                    <h3>UNDER REC + OVER YDS</h3>
+                    {% for result in urecs_oyards %}
+                        <div class="projection-item">{{ result }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Return Link -->
+        <div class="return-section">
+            <a href="/?player_name={{ player_name }}&receptions_threshold={{ receptions_threshold }}&yard_threshold={{ yard_threshold }}&time_remaining={{ time_remaining }}&current_receptions={{ current_receptions }}&current_yards={{ current_yards }}" class="return-button">
+                NEW SIMULATION
+            </a>
+        </div>
+
+        <!-- Game Log -->
+        <div class="game-log-section">
+            <div class="game-log-header">
+                <h2>HISTORICAL DATA</h2>
+                <div class="game-log-stats">
+                    <div>GAMES: <span>{{ game_log_stats.total_games }}</span></div>
+                    <div>AVG YDS: <span>{{ game_log_stats.avg_yards }}</span></div>
+                    <div>AVG REC: <span>{{ game_log_stats.avg_receptions }}</span></div>
+                </div>
+            </div>
+            
+            <table class="game-log-table">
+                <thead>
+                    <tr>
+                        <th>WEEK</th>
+                        <th>OPP</th>
+                        <th>RESULT</th>
+                        <th>YDS</th>
+                        <th>REC</th>
+                        <th>LONG</th>
+                        <th>{% if game_log[0].targets is defined %}TARGETS{% else %}QB{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in game_log %}
+                    <tr>
+                        <td>{{ game.formatted_date }}</td>
+                        <td>{{ game.opponent }}</td>
+                        <td class="{% if game.result == 'W' %}win{% else %}loss{% endif %}">
+                            {{ game.result }} {{ game.score }}
+                        </td>
+                        <td>{{ game.total_yards }}</td>
+                        <td>{{ game.receptions }}</td>
+                        <td>{{ game.longest_reception }}</td>
+                        <td class="targets-qbs">
+                            {% if game.targets is defined %}
+                                {{ game.targets }}
+                            {% else %}
+                                {{ game.qbs }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
